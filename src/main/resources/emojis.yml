@@ -1,0 +1,6 @@
+smile:
+  path: 'emojis/smile.png'
+  replaces:
+    - ':smile:'
+    - ':)'
+    - '🙂'
