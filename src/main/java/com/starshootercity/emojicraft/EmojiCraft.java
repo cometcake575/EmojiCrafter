@@ -89,12 +89,14 @@ public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor 
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onAsyncChat(AsyncChatEvent event) {
-        EmojiConsoleFilter.messages.add(event.message());
+        EmojiConsoleFilter.messages.add(new EmojiConsoleFilter.ComponentMessage(event.getPlayer().getName(), event.message()));
         Component component = event.message();
-        for (String emoji : emojiComponentMap.keySet()) {
-            Component emojiComponent = emojiComponentMap.get(emoji);
-            for (String replacement : fileConfiguration.getStringList("%s.replaces".formatted(emoji))) {
-                component = component.replaceText(builder -> builder.matchLiteral(replacement).replacement(emojiComponent));
+        if (event.getPlayer().hasPermission("emojicrafter.default")) {
+            for (String emoji : emojiComponentMap.keySet()) {
+                Component emojiComponent = emojiComponentMap.get(emoji);
+                for (String replacement : fileConfiguration.getStringList("%s.replaces".formatted(emoji))) {
+                    component = component.replaceText(builder -> builder.matchLiteral(replacement).replacement(emojiComponent));
+                }
             }
         }
         event.message(component.append(Component.text(EmojiCraft.getInstance().getConfig().getString("filter-flag", "\u0000")).font(Key.key("minecraft:pixels"))));

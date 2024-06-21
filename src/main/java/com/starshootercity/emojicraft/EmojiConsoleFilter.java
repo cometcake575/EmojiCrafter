@@ -23,11 +23,16 @@ public class EmojiConsoleFilter implements Filter {
         return Result.NEUTRAL;
     }
 
-    public static List<Component> messages = new ArrayList<>();
+    public record ComponentMessage(String sender, Component message) {
+
+    }
+
+    public static List<ComponentMessage> messages = new ArrayList<>();
 
     public Result checkMessage(String message) {
         if (message.contains(EmojiCraft.getInstance().getConfig().getString("filter-flag", "\u0000"))) {
-            if (!messages.isEmpty()) Bukkit.broadcast(messages.remove(0));
+            ComponentMessage componentMessage = messages.remove(0);
+            Bukkit.getConsoleSender().sendMessage(Component.text("<%s> ".formatted(componentMessage.sender)).append(componentMessage.message));
             return Result.DENY;
         }
         return Result.NEUTRAL;
