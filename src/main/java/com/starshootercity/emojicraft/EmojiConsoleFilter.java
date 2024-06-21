@@ -1,11 +1,16 @@
 package com.starshootercity.emojicraft;
 
+import net.kyori.adventure.text.Component;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.message.Message;
+import org.bukkit.Bukkit;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EmojiConsoleFilter implements Filter {
     @Override
@@ -18,8 +23,14 @@ public class EmojiConsoleFilter implements Filter {
         return Result.NEUTRAL;
     }
 
+    public static List<Component> messages = new ArrayList<>();
+
     public Result checkMessage(String message) {
-        return message.contains(EmojiCraft.get) ? Result.DENY : Result.NEUTRAL;
+        if (message.contains(EmojiCraft.getInstance().getConfig().getString("filter-flag", "\u0000"))) {
+            if (!messages.isEmpty()) Bukkit.broadcast(messages.remove(0));
+            return Result.DENY;
+        }
+        return Result.NEUTRAL;
     }
 
     @Override

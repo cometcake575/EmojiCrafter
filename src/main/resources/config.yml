@@ -1,4 +1,4 @@
-# The character that indicates to the console an emoji is present
+# The character that hides regular messages from the console to avoid spam from emoji forming characters
 # This should only be a single character and should not be one visible in the console
 # By default this is the 'null' character \u0000 but you can change it if you encounter any issues
 # Alternative options:
@@ -9,5 +9,5 @@
 filter-flag: '�'
 
 # Whether to use the default resource pack - this is required for emojis, but you may wish to disable it in order to add custom filter flags,
-# Or to merge it with your own pack. The default pack can be found at
+# Or to merge it with your own pack. The default pack can be found at https://github.com/cometcake575/EmojiCrafter/raw/main/EmojiPack.zip
 use-resource-pack: true

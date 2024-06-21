@@ -2,6 +2,7 @@ package com.starshootercity.emojicraft;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +18,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,14 +27,24 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor {
     private FileConfiguration fileConfiguration;
 
+    private static EmojiCraft instance;
+
+    public static EmojiCraft getInstance() {
+        return instance;
+    }
+
     @Override
     public void onEnable() {
+        instance = this;
+        saveDefaultConfig();
 
         Logger l = ((Logger) LogManager.getRootLogger());
         l.addFilter(new EmojiConsoleFilter());
@@ -77,6 +89,7 @@ public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor 
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onAsyncChat(AsyncChatEvent event) {
+        EmojiConsoleFilter.messages.add(event.message());
         Component component = event.message();
         for (String emoji : emojiComponentMap.keySet()) {
             Component emojiComponent = emojiComponentMap.get(emoji);
@@ -84,7 +97,7 @@ public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor 
                 component = component.replaceText(builder -> builder.matchLiteral(replacement).replacement(emojiComponent));
             }
         }
-        event.message(component);
+        event.message(component.append(Component.text(EmojiCraft.getInstance().getConfig().getString("filter-flag", "\u0000")).font(Key.key("minecraft:pixels"))));
     }
 
     private final Map<String, Component> emojiComponentMap = new HashMap<>();
@@ -127,12 +140,26 @@ public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor 
             result = result.append(Component.text('\uF001'));
         }
 
-        return result.append(Component.text("\uF003\u0000")).font(Key.key("minecraft:pixels"));
+        return result.append(Component.text('\uF003')).font(Key.key("minecraft:pixels"));
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         loadEmojis();
         return true;
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!getConfig().getBoolean("use-resource-pack")) return;
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
+            try {
+                event.getPlayer().sendResourcePacks(
+                        ResourcePackInfo.resourcePackInfo().uri(URI.create("https://github.com/cometcake575/EmojiCrafter/raw/main/EmojiPack.zip")).computeHashAndBuild().get()
+                );
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }, 30);
     }
 }
