@@ -1,5 +1,5 @@
 name: EmojiCrafter
-version: 1.0.0
+version: 1.0.2
 main: com.starshootercity.emojicraft.EmojiCraft
 description: Paper plugin adding emojis to the game
 api-version: '1.20'

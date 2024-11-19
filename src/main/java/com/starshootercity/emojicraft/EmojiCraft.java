@@ -81,7 +81,7 @@ public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor 
         emojiComponentMap.clear();
 
         for (String emoji : fileConfiguration.getKeys(false)) {
-            Component emojiComponent = makeEmoji(emoji);
+            Emoji emojiComponent = makeEmoji(emoji);
             if (emojiComponent == null) continue;
             emojiComponentMap.put(emoji, emojiComponent);
         }
@@ -92,9 +92,12 @@ public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor 
         EmojiConsoleFilter.messages.add(new EmojiConsoleFilter.ComponentMessage(event.getPlayer().getName(), event.message()));
         Component component = event.message();
         if (event.getPlayer().hasPermission("emojicrafter.default")) {
-            for (String emoji : emojiComponentMap.keySet()) {
-                Component emojiComponent = emojiComponentMap.get(emoji);
-                for (String replacement : fileConfiguration.getStringList("%s.replaces".formatted(emoji))) {
+            for (Emoji emoji : emojiComponentMap.values()) {
+                if (emoji.permission() != null) {
+                    if (!event.getPlayer().hasPermission(emoji.permission())) continue;
+                }
+                Component emojiComponent = emoji.emoji();
+                for (String replacement : emoji.replaces()) {
                     component = component.replaceText(builder -> builder.matchLiteral(replacement).replacement(emojiComponent));
                 }
             }
@@ -102,9 +105,9 @@ public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor 
         event.message(component.append(Component.text(EmojiCraft.getInstance().getConfig().getString("filter-flag", "\u0000")).font(Key.key("minecraft:pixels"))));
     }
 
-    private final Map<String, Component> emojiComponentMap = new HashMap<>();
+    private final Map<String, Emoji> emojiComponentMap = new HashMap<>();
 
-    public @Nullable Component makeEmoji(String emoji) {
+    public @Nullable Emoji makeEmoji(String emoji) {
         String path = fileConfiguration.getString("%s.path".formatted(emoji));
         if (path == null) {
             getLogger().warning("Emoji '%s' does not have a path set, ignoring".formatted(emoji));
@@ -142,7 +145,7 @@ public class EmojiCraft extends JavaPlugin implements Listener, CommandExecutor 
             result = result.append(Component.text('\uF001'));
         }
 
-        return result.append(Component.text('\uF003')).font(Key.key("minecraft:pixels"));
+        return new Emoji(result.append(Component.text('\uF003')).font(Key.key("minecraft:pixels")), fileConfiguration.getStringList("%s.replaces".formatted(emoji)), fileConfiguration.getString("%s.permission".formatted(emoji), null));
     }
 
     @Override

@@ -6,7 +6,7 @@
 # - '' \uF005
 # - '' \uF006
 # Other characters may be used, but require the resource pack to be modified
-filter-flag: '�'
+filter-flag: ''
 
 # Whether to use the default resource pack - this is required for emojis, but you may wish to disable it in order to add custom filter flags,
 # Or to merge it with your own pack. The default pack can be found at https://github.com/cometcake575/EmojiCrafter/raw/main/EmojiPack.zip
